@@ -6,7 +6,7 @@
 
 ### afterAll(fn, timeout)
 
-当你的文件中所有的测试套件执行完成后执行一个函数。如果该函数返回的是一个`Promise`或者`Generator`，Jest会等待`Promise`执行完(resolve)。
+在测试文件中，所有的测试套件执行完成后执行一个函数。如果该函数返回的是一个`Promise`或者`Generator`，Jest会等待`Promise`执行完(resolve)。
 
 `afterAll`有提供一个默认参数`timeout`(单位是毫秒)，用于指定在中止前等待多长时间。注意：默认超时为5秒。
 
@@ -46,11 +46,43 @@ test('can insert a thing', () => {
 
 ### afterEach(fn, timeout)
 
+在测试文件中，每执行完一个测试套件后执行一个函数。如果该函数返回的是一个`Promise`或者`Generator`，Jest会等待`Promise`执行完(resolve)。
 
+`afterEach`有提供一个默认参数`timeout`(单位是毫秒)，用于指定在中止前等待多长时间。注意：默认超时为5秒。
 
+如果你想要清理每个测试套件执行后产生的临时状态等，这个方法是非常有用的。
 
+比如：
 
+```javascript
+const globalDatabase = makeGlobalDatabase();
 
+function cleanUpDatabase(db) {
+  db.cleanUp();
+}
+
+afterEach(() => {
+  cleanUpDatabase(globalDatabase);
+});
+
+test('can find things', () => {
+  return globalDatabase.find('thing', {}, results => {
+    expect(results.length).toBeGreaterThan(0);
+  });
+});
+
+test('can insert a thing', () => {
+  return globalDatabase.insert('thing', makeThing(), response => {
+    expect(response.success).toBeTruthy();
+  });
+});
+```
+
+在这个例子中，`afterEach`会确保`cleanUpDatabase`在所有测试套件执行完毕后运行。
+
+如果`afterEach`是在一个`describe`块里面，你可以理解为它也是有作用域的，会被限定在该`describe`内。
+
+如果你想在运行所有测试套件后，一次性的进行清理工作，那么你需要`afterAll`。
 
 
 
