@@ -214,7 +214,13 @@ describe('binaryStringToNumber', () => {
 
 ### describe.each(table)(name, fn, timeout)
 
+如果你想复用一组测试套件来测试多份数据，可以使用`describe.each`。
 
+`describe.each`有两个API。
+
+- describe.each(table)(name, fn, timeout)
+
+  
 
 
 
