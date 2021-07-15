@@ -121,4 +121,100 @@ test('can find things', () => {
 
 ### beforeEach(fn, timeout)
 
+在文件运行每个测试套件之前运行一个函数。如果该函数返回的是一个`Promise`或者`Generator`，Jest会等待`Promise`执行完(resolve)。
+
+`beforeEach`有提供一个默认参数`timeout`(单位是毫秒)，用于指定在中止前等待多长时间。注意：默认超时为5秒。
+
+如果你想在每个测试运行之前重置一些全局状态，那么这个函数是很有用的。
+
+比如：
+
+```typescript
+const globalDatabase = makeGlobalDatabase();
+
+beforeEach(() => {
+  // Clears the database and adds some testing data.
+  // Jest will wait for this promise to resolve before running tests.
+  return globalDatabase.clear().then(() => {
+    return globalDatabase.insert({testData: 'foo'});
+  });
+});
+
+test('can find things', () => {
+  return globalDatabase.find('thing', {}, results => {
+    expect(results.length).toBeGreaterThan(0);
+  });
+});
+
+test('can insert a thing', () => {
+  return globalDatabase.insert('thing', makeThing(), response => {
+    expect(response.success).toBeTruthy();
+  });
+});
+```
+在这里，`beforeEach`会确保`database`在每次执行测试之前被重置。
+
+如果`beforeEach`是在一个`describe`块里面，你可以理解为它也是有作用域的，会被限定在该`describe`内。
+
+
+如果您想在任何测试套件运行之前只运行一次设置状态的代码，请使用`beforeAll`。
+
+### describe(name, fn)
+
+`describe(name, fn)`会创造一个块，在这个块内我们可以组合多个相关的测试套件。例如：
+
+```typescript
+const myBeverage = {
+  delicious: true,
+  sour: false,
+};
+
+describe('my beverage', () => {
+  test('is delicious', () => {
+    expect(myBeverage.delicious).toBeTruthy();
+  });
+
+  test('is not sour', () => {
+    expect(myBeverage.sour).toBeFalsy();
+  });
+});
+```
+
+当然这也不是必须的，你也可以直接在顶级作用于编写`test block`。但是如果你更喜欢组合多个`test`，使用`describe`是非常方便的。
+
+此外，`describe`也支持嵌套的。
+
+```typescript
+const binaryStringToNumber = binString => {
+  if (!/^[01]+$/.test(binString)) {
+    throw new CustomError('Not a binary number.');
+  }
+
+  return parseInt(binString, 2);
+};
+
+describe('binaryStringToNumber', () => {
+  describe('given an invalid binary string', () => {
+    test('composed of non-numbers throws CustomError', () => {
+      expect(() => binaryStringToNumber('abc')).toThrowError(CustomError);
+    });
+
+    test('with extra whitespace throws CustomError', () => {
+      expect(() => binaryStringToNumber('  100')).toThrowError(CustomError);
+    });
+  });
+
+  describe('given a valid binary string', () => {
+    test('returns the correct number', () => {
+      expect(binaryStringToNumber('100')).toBe(4);
+    });
+  });
+});
+```
+
+### describe.each(table)(name, fn, timeout)
+
+
+
+
 
